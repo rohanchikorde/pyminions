@@ -57,9 +57,37 @@
     </style>
 </head>
 <body>
+    <!-- Sticky Top Navigation Bar -->
+    <nav id="top-nav" style="position:sticky; top:0; z-index:1000; background:#fff; border-bottom:1px solid #ddd; box-shadow:0 2px 4px rgba(0,0,0,0.04); padding:0 20px; display:flex; align-items:center; height:54px;">
+      <span style="display:flex; align-items:center; font-weight:bold; font-size:1.3rem; margin-right:2rem;">
+  <img src="../../pyminions/static/minions_logo.jpg" alt="PyMinions Logo" style="height:38px; width:auto; margin-right:10px; border-radius:8px; box-shadow:0 1px 3px rgba(0,0,0,0.13);">
+  <span style="color:#fceb00; text-shadow:1px 1px 2px #333, 0 0 2px #333;">PyMinions</span>
+</span>
+      <a href="#model-info" style="margin-left:1.5rem; background:#fceb00; color:#222; padding:8px 15px; border-radius:6px; font-weight:bold; box-shadow:0 1px 3px rgba(0,0,0,0.08); border:1px solid #FFD600; text-decoration:none; transition:background 0.2s, color 0.2s;" onmouseover="this.style.background='#ffe066'" onmouseout="this.style.background='#FFD600'">Information</a>
+      <a href="#summary" style="margin-left:1.5rem; background:#fceb00; color:#222; padding:8px 15px; border-radius:6px; font-weight:bold; box-shadow:0 1px 3px rgba(0,0,0,0.08); border:1px solid #FFD600; text-decoration:none; transition:background 0.2s, color 0.2s;" onmouseover="this.style.background='#ffe066'" onmouseout="this.style.background='#FFD600'">Summary</a>
+      <a href="#metrics" style="margin-left:1.5rem; background:#fceb00; color:#222; padding:8px 15px; border-radius:6px; font-weight:bold; box-shadow:0 1px 3px rgba(0,0,0,0.08); border:1px solid #FFD600; text-decoration:none; transition:background 0.2s, color 0.2s;" onmouseover="this.style.background='#ffe066'" onmouseout="this.style.background='#FFD600'">Metrics</a>
+      <a href="#visualizations" style="margin-left:1.5rem; background:#fceb00; color:#222; padding:8px 15px; border-radius:6px; font-weight:bold; box-shadow:0 1px 3px rgba(0,0,0,0.08); border:1px solid #FFD600; text-decoration:none; transition:background 0.2s, color 0.2s;" onmouseover="this.style.background='#ffe066'" onmouseout="this.style.background='#FFD600'">Visualizations</a>
+      <a href="#explainability" style="margin-left:1.5rem; background:#fceb00; color:#222; padding:8px 15px; border-radius:6px; font-weight:bold; box-shadow:0 1px 3px rgba(0,0,0,0.08); border:1px solid #FFD600; text-decoration:none; transition:background 0.2s, color 0.2s;" onmouseover="this.style.background='#ffe066'" onmouseout="this.style.background='#FFD600'">Explainability &amp; Interpretability</a>
+    </nav>
+    <script>
+      // Smooth scroll for nav links
+      document.querySelectorAll('#top-nav a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function (e) {
+          e.preventDefault();
+          const target = document.querySelector(this.getAttribute('href'));
+          if (target) {
+            window.scrollTo({
+              top: target.offsetTop - 60,
+              behavior: 'smooth'
+            });
+          }
+        });
+      });
+    </script>
+
     <div class="container">
         <h1>Model Evaluation Report</h1>
-        <div class="section">
+        <div id="model-info" class="section">
             <h2>Model Information</h2>
             <p><strong>Model Type:</strong> {{ model_type }}</p>
             <p><strong>Evaluation Date:</strong> {{ evaluation_date }}</p>
@@ -69,7 +97,7 @@
             {% if model_source %}<p><strong>Model Source:</strong> {{ model_source }}</p>{% endif %}
         </div>
 
-        <div class="section">
+        <div id="summary" class="section">
             <h2>Summary & Recommendations</h2>
             <p>{{ summary }}</p>
             <ul>
@@ -79,7 +107,7 @@
             </ul>
         </div>
 
-        <div class="section">
+        <div id="metrics" class="section">
             <h2>Performance Metrics</h2>
             <h3>Basic Metrics</h3>
             <table class="metrics-table">
@@ -123,7 +151,7 @@
             </div>
         </div>
 
-        <div class="section">
+        <div id="visualizations" class="section">
             <h2>Visualizations</h2>
         </div>
 
@@ -211,7 +239,7 @@
         {% endif %}
 
         <div class="section">
-            <h2>Explainability & Interpretability</h2>
+            <h2 id="explainability">Explainability &amp; Interpretability</h2>
             <div class="plot-container">
                 <h3>SHAP Summary (Global Feature Importance)</h3>
                 <img src="{{ shap_summary_path }}" alt="SHAP Summary Plot">

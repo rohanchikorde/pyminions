@@ -350,30 +350,31 @@ class ModelEvaluator:
             return metrics
 
     def _generate_html_report(self, basic_metrics: Dict = None, advanced_metrics: Dict = None, interp_basic: str = '', interp_advanced: str = '', metrics: Dict = None, extra_info: Dict = None,
-                              interpretation_metrics: str = "",
-                              interpretation_feature_importance: str = "",
-                              interpretation_shap_summary: str = "",
-                              interpretation_shap_local: str = "",
-                              interpretation_lime_local: str = "",
-                              interpretation_pdp_ice: str = "",
-                              classification_report_path: str = "",
-                              confusion_matrix_path: str = "",
-                              roc_curve_path: str = "",
-                              precision_recall_path: str = "",
-                              feature_importance_path: str = "",
-                              prediction_error_path: str = "",
-                              residuals_plot_path: str = "",
-                              shap_summary_path: str = "",
-                              shap_local_path: str = "",
-                              lime_local_path: str = "",
-                              pdp_ice_paths: List[str] = None,
-                              plotly_confusion_matrix_html: str = "",
-                              plotly_roc_html: str = "",
-                              plotly_feature_importance_html: str = "",
-                              plotly_prediction_error_html: str = "",
-                              plotly_residuals_html: str = "") -> str:
+                          interpretation_metrics: str = "",
+                          interpretation_feature_importance: str = "",
+                          interpretation_shap_summary: str = "",
+                          interpretation_shap_local: str = "",
+                          interpretation_lime_local: str = "",
+                          interpretation_pdp_ice: str = "",
+                          classification_report_path: str = "",
+                          confusion_matrix_path: str = "",
+                          roc_curve_path: str = "",
+                          precision_recall_path: str = "",
+                          feature_importance_path: str = "",
+                          prediction_error_path: str = "",
+                          residuals_plot_path: str = "",
+                          shap_summary_path: str = "",
+                          shap_local_path: str = "",
+                          lime_local_path: str = "",
+                          pdp_ice_paths: List[str] = None,
+                          plotly_confusion_matrix_html: str = "",
+                          plotly_roc_html: str = "",
+                          plotly_feature_importance_html: str = "",
+                          plotly_prediction_error_html: str = "",
+                          plotly_residuals_html: str = "",
+                          y_test=None) -> str:
         """Generate HTML report for model evaluation results using the modular reporting component."""
-        # Use the modular HTML report generator
+        summary, recommendations = self._generate_summary_and_recommendations(metrics, basic_metrics, advanced_metrics, self.task_type, extra_info, feature_importance_path, y_test)
         return generate_html_report(
             output_dir=self.output_dir,
             model_type=self.task_type,
@@ -383,6 +384,8 @@ class ModelEvaluator:
             interp_advanced=interp_advanced,
             metrics=metrics,
             extra_info=extra_info,
+            summary=summary,
+            recommendations=recommendations,
             interpretation_metrics=interpretation_metrics,
             interpretation_feature_importance=interpretation_feature_importance,
             interpretation_shap_summary=interpretation_shap_summary,
@@ -406,3 +409,79 @@ class ModelEvaluator:
             plotly_prediction_error_html=plotly_prediction_error_html,
             plotly_residuals_html=plotly_residuals_html
         )
+
+    def _generate_summary_and_recommendations(self, metrics, basic_metrics, advanced_metrics, task_type, extra_info, feature_importance_path, y_test=None):
+        """
+        Generate a dynamic summary and recommendations for the report.
+        """
+        import numpy as np
+        summary = ""
+        recommendations = []
+        if task_type == 'classification':
+            roc_auc = metrics.get('roc_auc') or basic_metrics.get('roc_auc') or advanced_metrics.get('roc_auc')
+            acc = metrics.get('accuracy') or basic_metrics.get('accuracy') or advanced_metrics.get('accuracy')
+            prec = metrics.get('precision') or basic_metrics.get('precision') or advanced_metrics.get('precision')
+            rec = metrics.get('recall') or basic_metrics.get('recall') or advanced_metrics.get('recall')
+            f1 = metrics.get('f1') or basic_metrics.get('f1') or advanced_metrics.get('f1')
+            # Class imbalance info
+            class_info = ""
+            if y_test is not None:
+                classes, counts = np.unique(y_test, return_counts=True)
+                total = len(y_test)
+                proportions = counts / total
+                min_prop = proportions.min()
+                max_prop = proportions.max()
+                class_info = f" Class distribution: " + ", ".join([f"Class {c}: {p:.2%}" for c, p in zip(classes, proportions)])
+                if min_prop < 0.2 or (max_prop / min_prop > 2):
+                    class_info += " (Imbalance detected)"
+                    recommendations.append("Consider using class-weighted models or resampling techniques due to class imbalance.")
+            if roc_auc and roc_auc > 0.9:
+                summary += f"The model performs well with a ROC-AUC of {roc_auc:.2f}"
+                if acc and prec and rec and min(acc, prec, rec) > 0.85:
+                    summary += f" and balanced metrics (accuracy, precision, recall ~{acc:.2f})."
+                else:
+                    summary += "."
+            elif roc_auc:
+                summary += f"The model's ROC-AUC is {roc_auc:.2f}."
+            if class_info:
+                summary += class_info
+            if feature_importance_path:
+                summary += " Feature importance analysis reveals the top predictors."
+                recommendations.append("Investigate top features for data quality or feature engineering opportunities.")
+            if 'calibration' in (extra_info or {}):
+                summary += " The calibration plot indicates potential over/under-confidence."
+                recommendations.append("Apply probability calibration (e.g., Platt scaling) to improve reliability.")
+            recommendations.append("Validate model on an external dataset to ensure generalizability.")
+        elif task_type == 'regression':
+            r2 = metrics.get('r2') or basic_metrics.get('r2') or advanced_metrics.get('r2')
+            rmse = metrics.get('rmse') or basic_metrics.get('rmse') or advanced_metrics.get('rmse')
+            mae = metrics.get('mae') or basic_metrics.get('mae') or advanced_metrics.get('mae')
+            y_range = None
+            y_std = None
+            if y_test is not None:
+                y_range = np.ptp(y_test)
+                y_std = np.std(y_test)
+            if r2 and r2 > 0.8:
+                summary += f"The model explains a large portion of variance (R² = {r2:.2f})."
+            elif r2:
+                summary += f"Model R² is {r2:.2f}."
+            if rmse:
+                summary += f" RMSE is {rmse:.2f}."
+                if y_range and y_range > 0:
+                    summary += f" (RMSE is {100*rmse/y_range:.1f}% of target range)"
+                if y_std and y_std > 0:
+                    summary += f" (RMSE/std = {rmse/y_std:.2f})"
+            if mae:
+                summary += f" MAE is {mae:.2f}."
+                if y_range and y_range > 0:
+                    summary += f" (MAE is {100*mae/y_range:.1f}% of target range)"
+                if y_std and y_std > 0:
+                    summary += f" (MAE/std = {mae/y_std:.2f})"
+            if feature_importance_path:
+                summary += " Feature importance analysis highlights key predictors."
+                recommendations.append("Focus on optimizing or validating the most important features.")
+            recommendations.append("Check for heteroscedasticity or outliers in residuals.")
+            recommendations.append("Validate model on an external dataset to ensure generalizability.")
+        else:
+            summary = "Model evaluation summary is unavailable."
+        return summary, recommendations

@@ -16,6 +16,8 @@ def generate_html_report(
     interp_advanced: str,
     metrics: Dict,
     extra_info: Dict,
+    summary: str = '',
+    recommendations: list = None,
     interpretation_metrics: Optional[str] = None,
     interpretation_feature_importance: Optional[str] = None,
     interpretation_shap_summary: Optional[str] = None,
@@ -144,7 +146,9 @@ def generate_html_report(
         'plotly_roc_html': plotly_roc_html,
         'plotly_feature_importance_html': plotly_feature_importance_html,
         'plotly_prediction_error_html': plotly_prediction_error_html,
-        'plotly_residuals_html': plotly_residuals_html
+        'plotly_residuals_html': plotly_residuals_html,
+        'summary': summary,
+        'recommendations': recommendations
     }
     
     # Render template

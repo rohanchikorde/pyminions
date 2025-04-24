@@ -11,7 +11,7 @@ setup(
     description="A comprehensive model evaluation framework for machine learning",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/rohan-chikorde/pyminions",
+    url="https://github.com/rohanchikorde/pyminions",
     packages=find_packages(),
     classifiers=[
         "Programming Language :: Python :: 3",

@@ -87,17 +87,20 @@
 
     <div class="container">
         <h1>Model Evaluation Report</h1>
-        <div id="model-info" class="section">
-            <h2>Model Information</h2>
-            <p><strong>Model Type:</strong> {{ model_type }}</p>
-            <p><strong>Evaluation Date:</strong> {{ evaluation_date }}</p>
-            {% if evaluation_split %}<p><strong>Evaluation Split:</strong> {{ evaluation_split }}</p>{% endif %}
-            {% if dataset_size %}<p><strong>Test Set Size:</strong> {{ dataset_size }}</p>{% endif %}
-            {% if target_variable and target_variable != 'N/A' %}<p><strong>Target Variable:</strong> {{ target_variable }}</p>{% endif %}
-            {% if model_source %}<p><strong>Model Source:</strong> {{ model_source }}</p>{% endif %}
+        <!-- Model Information Section -->
+        <div id="model-info" class="model-info" style="margin: 30px 0 20px 0; padding: 20px; background: #f9f9f9; border-radius: 8px; box-shadow: 0 1px 4px rgba(0,0,0,0.06);">
+          <h2 style="margin-top:0;">Model Information</h2>
+          <ul style="list-style:none; padding:0; font-size:1.1rem;">
+            <li><strong>Model Name:</strong> {{ model_name }}</li>
+            <li><strong>Model Type:</strong> {{ model_type }}</li>
+            <li><strong>Evaluation Date:</strong> {{ evaluation_date }}</li>
+            <li><strong>Dataset Size:</strong> {{ dataset_size }}</li>
+            <li><strong>Class Distribution:</strong> {{ class_distribution }}</li>
+            <li><strong>Training Date:</strong> {{ training_date }}</li>
+          </ul>
         </div>
-
         <div id="summary" class="section">
+            <!-- Model Information is now only at the top of the report -->
             <h2>Summary & Recommendations</h2>
             <p>{{ summary }}</p>
             <ul>

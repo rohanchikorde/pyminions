@@ -24,6 +24,13 @@ from .visualizations.interactive_plots import (
 from .reporting.html_report import generate_html_report
 
 class ModelEvaluator:
+    def _get_class_distribution(self, y):
+        import numpy as np
+        unique, counts = np.unique(y, return_counts=True)
+        total = counts.sum()
+        dist = [f"{count/total:.0%} Class {label}" for label, count in zip(unique, counts)]
+        return ', '.join(dist)
+
     """
     A comprehensive model evaluation framework that combines multiple libraries
     to provide detailed analysis of machine learning models.
@@ -312,6 +319,10 @@ class ModelEvaluator:
                 interp_advanced=interp_advanced,
                 metrics=metrics,  # for backward compatibility
                 extra_info=extra_info,
+                model_name=model_src_val,
+                dataset_size=f"{len(X_train)+len(X_test)} samples (80% train, 20% test)",
+                class_distribution=self._get_class_distribution(y_test) if self.task_type == 'classification' else '',
+                training_date=datetime.datetime.now().strftime('%B %d, %Y'),
                 interpretation_metrics=interpretation_metrics,
                 interpretation_feature_importance=interpretation_feature_importance,
                 interpretation_shap_summary=interpretation_shap_summary,
@@ -372,6 +383,10 @@ class ModelEvaluator:
                           plotly_feature_importance_html: str = "",
                           plotly_prediction_error_html: str = "",
                           plotly_residuals_html: str = "",
+                          model_name: str = '',
+                          dataset_size: str = '',
+                          class_distribution: str = '',
+                          training_date: str = '',
                           y_test=None) -> str:
         """Generate HTML report for model evaluation results using the modular reporting component."""
         summary, recommendations = self._generate_summary_and_recommendations(metrics, basic_metrics, advanced_metrics, self.task_type, extra_info, feature_importance_path, y_test)
@@ -379,6 +394,10 @@ class ModelEvaluator:
             output_dir=self.output_dir,
             model_type=self.task_type,
             basic_metrics=basic_metrics,
+            model_name=model_name,
+            dataset_size=dataset_size,
+            class_distribution=class_distribution,
+            training_date=training_date,
             advanced_metrics=advanced_metrics,
             interp_basic=interp_basic,
             interp_advanced=interp_advanced,

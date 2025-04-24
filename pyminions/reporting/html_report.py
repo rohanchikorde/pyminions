@@ -16,6 +16,10 @@ def generate_html_report(
     interp_advanced: str,
     metrics: Dict,
     extra_info: Dict,
+    model_name: str = '',
+    dataset_size: str = '',
+    class_distribution: str = '',
+    training_date: str = '',
     summary: str = '',
     recommendations: list = None,
     interpretation_metrics: Optional[str] = None,
@@ -119,8 +123,12 @@ def generate_html_report(
     
     # Prepare context for template
     context = {
+        'model_name': model_name or extra_info.get('model_name', ''),
         'model_type': model_type,
         'evaluation_date': extra_info.get('evaluation_date', ''),
+        'dataset_size': dataset_size or extra_info.get('dataset_size', ''),
+        'class_distribution': class_distribution or extra_info.get('class_distribution', ''),
+        'training_date': training_date or extra_info.get('training_date', ''),
         'basic_metrics': basic_metrics,
         'advanced_metrics': advanced_metrics,
         'interp_basic': interp_basic,
